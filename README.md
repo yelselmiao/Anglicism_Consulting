@@ -6,5 +6,4 @@
 
 **Affiliation**: [Applied Statistics and Data Science Group](https://asda.stat.ubc.ca) and [STCS](https://www.stat.ubc.ca/~stcs/)   
 **Consultant**: Shuyi Tan   
-**Client**: Dr. Marie-Eve Bouchard  
 **Date**: Feb - March 2022
