@@ -7,39 +7,6 @@ editor_options:
 I added the columns BE (Where did you grow up?) and BH (Where do you live?). 
 I created categories for the cities: Montreal, Sherbrooke, Quebec, Other, ?(where there is no answer).
 
-The social factors I'm interested in: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP). 
-
-The mean of the scores for Part 1 are on the last row. 
-
-
-
-Part 1
-Q1 to Q15:
-
-
-
-In all these sentences, the use of angliscism is "innovative". The anglicisms are used in a way that is acceptable for young people, but not so much for older people. This use of anglicisms differs from the standard.  
-They are asked to evaluate the sentence according to the 5 points above. 
-I'd like to know how the scores relate to the social factors: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP).  
-
-RQ1: Which of these factors (if any) are correlated to the scores in Part 1?
-
-Part 2
-The participants have to choose one of the possible three sentences: an innovative use of anglicism (in bold), a more traditional one, or give another sentence that they would use.
-(I put in bold the innovative forms.)
-RQ1: How many people used each of these sentence?
-RQ2: Does the use of the innovative forms correlates with any of the social factors? (same ones as above)
-
-Q20: (a) J’ai domp ma blonde. (b) J’ai dompé ma blonde. (c) Neither! I would rather say this:  
-Q21: (a) T’as juste à scroll en bas. (b) T’as juste à scroller en bas. (c) Neither! I would rather say:  
-Q22: (a) As-tu enjoyé ton voyage? (b) As-tu enjoy ton voyage? (c) Neither! I would rather say:  
-Q23: (a) Je l'ai texté hier. (b) Je l'ai text hier. (c) Neither! I would rather say:  
-Q24: (a) Il m'a ghost. (b) Il m'a ghosté. (c) Neither! I would rather say:  
-Q25: (a) Tu m'as skipé. (b) Tu m'as skip. (c) Neither! I would rather say:  
-Q26: (a) J'ai bu du vin et j'ai pass out dans mon lit. (b) J'ai bu du vin et j'ai passé out dans mon lit. (c) Neither! I would rather say:  
-Q27: (a) Est-ce que Paul va être kické out du cours? (b) Est-ce que Paul va être kick out du cours? (c) Neither! I would rather say:  
-Q28: (a) On doit upgrade notre forfait d'internet. (b) On doit upgrader notre forfait d'internet. (c) Neither! I would rather say:  
-Q29: (a) Tu m'as spottée dans mon auto. (b) Tu m'as spot dans mon auto. (c) Neither! I would rather say:  
 
 No need to look at Parts 3-5. 
 
@@ -53,9 +20,7 @@ suppressPackageStartupMessages(library(rstatix))
 ```{r Load Data}
 raw_data <- readxl::read_xlsx(paste0(here::here(), '/Data/survey_data.xlsx'), sheet = "Results")
 raw_data <- raw_data[2:(nrow(raw_data)-1),]
-
-source(paste0(here::here(), '/survey_data.xlsx'))
-
+source(paste0(here::here(), '/Code/Cleaning.R'))
 data <- pre_clean(raw_data)
 ```
 
@@ -72,6 +37,7 @@ data %>%
   tally() %>% 
   mutate(prop = percent(n/sum(n)))
 ```
+
 
 ```{r Age, Warning = FALSE, warning = FALSE}
 #8 people did not reveal their age
@@ -168,18 +134,22 @@ eng_pro_data %>%
 
 
 
-
-
-
 # Analysis of Part 1 
+
+The social factors I'm interested in: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP). 
+
+Part 1
+Q1 to Q15:
+
+In all these sentences, the use of angliscism is "innovative". The anglicisms are used in a way that is acceptable for young people, but not so much for older people. This use of anglicisms differs from the standard.  
+They are asked to evaluate the sentence according to the 5 points above. 
+I'd like to know how the scores relate to the social factors: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP).  
+
+RQ1: Which of these factors (if any) are correlated to the scores in Part 1?
 
 I'd like to know how the scores relate to the social factors: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP).  
 
-```{r data prep}
-# p1_data <- data %>% 
-#   select(-c(16:25)) %>% 
-#   mutate(id = 1:nrow(data)) %>%
-#   pivot_longer(cols = -c(gender,age, grew_up, live, edu_level, eng_pro, id), names_to = 'sentence', values_to = 'score') 
+```{r part 1 data prep}
 
 p1_data_wide <- data %>%
   select(-c(16:25)) %>%
@@ -350,7 +320,7 @@ p1_data_long %>%
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 10, angle = -10))
+        axis.text.x = element_text(size = 10, angle = -5))
 
 # corr analysis
 p1_data_wide %>% 
@@ -361,6 +331,156 @@ p1_data_wide %>%
             p_value = cor.test(score_mean,eng_pro_encoded)[["p.value"]])
 ```
 # Analysis of Part 2
+
+Part 2
+The participants have to choose one of the possible three sentences: an innovative use of anglicism (in bold), a more traditional one, or give another sentence that they would use.
+(I put in bold the innovative forms.)
+
+RQ1: How many people used each of these sentence?
+RQ2: Does the use of the innovative forms correlates with any of the social factors? (same ones as above)
+
+Q20: (a) J’ai domp ma blonde. (b) J’ai dompé ma blonde. (c) Neither! I would rather say this:  
+Q21: (a) T’as juste à scroll en bas. (b) T’as juste à scroller en bas. (c) Neither! I would rather say:  
+Q22: (a) As-tu enjoyé ton voyage? (b) As-tu enjoy ton voyage? (c) Neither! I would rather say:  
+Q23: (a) Je l'ai texté hier. (b) Je l'ai text hier. (c) Neither! I would rather say:  
+Q24: (a) Il m'a ghost. (b) Il m'a ghosté. (c) Neither! I would rather say:  
+Q25: (a) Tu m'as skipé. (b) Tu m'as skip. (c) Neither! I would rather say:  
+Q26: (a) J'ai bu du vin et j'ai pass out dans mon lit. (b) J'ai bu du vin et j'ai passé out dans mon lit. (c) Neither! I would rather say:  
+Q27: (a) Est-ce que Paul va être kické out du cours? (b) Est-ce que Paul va être kick out du cours? (c) Neither! I would rather say:  
+Q28: (a) On doit upgrade notre forfait d'internet. (b) On doit upgrader notre forfait d'internet. (c) Neither! I would rather say:  
+Q29: (a) Tu m'as spottée dans mon auto. (b) Tu m'as spot dans mon auto. (c) Neither! I would rather say:  
+
+
+
+
+```{r p2 data prep}
+p2_data <- data %>% select(-c(1:15))
+
+p2_data <- cbind(
+  p2_data,
+  choice_sorter('domp ', 'dompé', p2_data$p2_1_choice, 'p2_1'),
+  choice_sorter('scroll ', 'scroller', p2_data$p2_2_choice, 'p2_2'),
+  choice_sorter('enjoy ', 'enjoyé', p2_data$p2_3_choice, 'p2_3'),
+  choice_sorter('text ', 'texté', p2_data$p2_4_choice, 'p2_4'),
+  choice_sorter('ghost ', 'ghosté', p2_data$p2_5_choice, 'p2_5'),
+  choice_sorter('skip ', 'skipé', p2_data$p2_6_choice, 'p2_6'),
+  choice_sorter('pass ', 'passé', p2_data$p2_7_choice, 'p2_7'),
+  choice_sorter('kick ', 'kické', p2_data$p2_8_choice, 'p2_8'),
+  choice_sorter('upgrade ', 'upgrader', p2_data$p2_9_choice, 'p2_9'),
+  choice_sorter('spot ', 'spottée', p2_data$p2_10_choice, 'p2_10')
+)
+
+p2_data <- p2_data %>% 
+  select(-c(1:10))
+  mutate(id = 1:nrow(data)) %>% 
+  mutate_at(as.factor, .vars = vars(7:16)) %>% 
+  mutate(id = 1:nrow(data)) 
+```
+
+
+
+```{r How many people used each of these sentence?}
+# Table 
+freq_mat <- matrix(NA, ncol = 9, nrow = 10)
+freq_mat[, 1] <- names(p2_data)[7:16]
+
+for (j in 7:16) {
+  tb <- table(p2_data[, j])
+  prob_tb <- paste0(round(prop.table(tb), 2) * 100, '%')
+  freq_mat[j - 6,seq(2, 8, 2)] <- as.numeric(tb)
+  freq_mat[j - 6,seq(3, 9, 2)] <- prob_tb
+}
+
+freq_df <- as.data.frame(freq_mat)
+colnames(freq_df) <- c('sentence', 
+                       "both_ct",'both_prop',
+                       "innovative_ct", "innovative_prop" ,
+                       "neither_ct","neither_prop",
+                       "traditional_ct", "traditional_prop")
+freq_df %>% 
+  mutate(both = paste0(both_ct, ' (', both_prop, ')'),
+         innovative = paste0(innovative_ct, ' (', innovative_prop, ')'),
+         neither = paste0(neither_ct, ' (', neither_prop, ')'),
+         tradition = paste0(traditional_ct, ' (', traditional_prop, ')')) %>% 
+  select(sentence, both, innovative, neither, tradition)
+
+
+
+
+# bar chart 
+p2_data %>% 
+  select(c(7:16)) %>%
+  pivot_longer(cols = everything(), values_to = 'word_choice', names_to = 'sentence') %>% 
+  mutate(word_choice = factor(word_choice, levels = c('neither', 'both','innovative' , 'traditional')),
+         sentence = recode(sentence,
+                `p2_1` = "domp/dompé",
+                `p2_2` = "scroll/scroller",
+                `p2_3` = "enjoy/enjoyé",
+                `p2_4` = "text/texté",
+                `p2_5` = "ghost/ghosté",
+                `p2_6` = "skip/skipé",
+                `p2_7` = "pass/passé",
+                `p2_8` = "kick/kické",
+                `p2_9` = "upgrade/upgrader",
+                `p2_10` = "spot/spottée")) %>%
+  drop_na() %>% 
+  mutate(sentence = as.factor(sentence)) %>%
+  group_by(sentence) %>% 
+  ggplot(aes(fill= word_choice, x=sentence)) + 
+  geom_bar(stat="count", position ="fill") + 
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "BrBG") + 
+  labs(x = 'Innovative word/Traditional word', y = 'Percentage', fill = 'Word Choice') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold', vjust = - 1),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 10, angle = -45, hjust = -0.08, vjust = 0.12))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
