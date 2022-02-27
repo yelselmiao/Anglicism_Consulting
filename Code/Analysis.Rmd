@@ -1,0 +1,370 @@
+---
+title: "R Notebook"
+output: github_document
+editor_options: 
+  chunk_output_type: inline
+---
+I added the columns BE (Where did you grow up?) and BH (Where do you live?). 
+I created categories for the cities: Montreal, Sherbrooke, Quebec, Other, ?(where there is no answer).
+
+The social factors I'm interested in: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP). 
+
+The mean of the scores for Part 1 are on the last row. 
+
+
+
+Part 1
+Q1 to Q15:
+
+
+
+In all these sentences, the use of angliscism is "innovative". The anglicisms are used in a way that is acceptable for young people, but not so much for older people. This use of anglicisms differs from the standard.  
+They are asked to evaluate the sentence according to the 5 points above. 
+I'd like to know how the scores relate to the social factors: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP).  
+
+RQ1: Which of these factors (if any) are correlated to the scores in Part 1?
+
+Part 2
+The participants have to choose one of the possible three sentences: an innovative use of anglicism (in bold), a more traditional one, or give another sentence that they would use.
+(I put in bold the innovative forms.)
+RQ1: How many people used each of these sentence?
+RQ2: Does the use of the innovative forms correlates with any of the social factors? (same ones as above)
+
+Q20: (a) J’ai domp ma blonde. (b) J’ai dompé ma blonde. (c) Neither! I would rather say this:  
+Q21: (a) T’as juste à scroll en bas. (b) T’as juste à scroller en bas. (c) Neither! I would rather say:  
+Q22: (a) As-tu enjoyé ton voyage? (b) As-tu enjoy ton voyage? (c) Neither! I would rather say:  
+Q23: (a) Je l'ai texté hier. (b) Je l'ai text hier. (c) Neither! I would rather say:  
+Q24: (a) Il m'a ghost. (b) Il m'a ghosté. (c) Neither! I would rather say:  
+Q25: (a) Tu m'as skipé. (b) Tu m'as skip. (c) Neither! I would rather say:  
+Q26: (a) J'ai bu du vin et j'ai pass out dans mon lit. (b) J'ai bu du vin et j'ai passé out dans mon lit. (c) Neither! I would rather say:  
+Q27: (a) Est-ce que Paul va être kické out du cours? (b) Est-ce que Paul va être kick out du cours? (c) Neither! I would rather say:  
+Q28: (a) On doit upgrade notre forfait d'internet. (b) On doit upgrader notre forfait d'internet. (c) Neither! I would rather say:  
+Q29: (a) Tu m'as spottée dans mon auto. (b) Tu m'as spot dans mon auto. (c) Neither! I would rather say:  
+
+No need to look at Parts 3-5. 
+
+```{r Library}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(scales))
+suppressPackageStartupMessages(library(rstatix))
+```
+
+
+```{r Load Data}
+raw_data <- readxl::read_xlsx(paste0(here::here(), '/Data/survey_data.xlsx'), sheet = "Results")
+raw_data <- raw_data[2:(nrow(raw_data)-1),]
+
+source(paste0(here::here(), '/survey_data.xlsx'))
+
+data <- pre_clean(raw_data)
+```
+
+# Overview of Participants 
+```{r gender}
+data <- data %>%
+  mutate(gender = recode(gender,
+                      `Femme` = "Woman",
+                      `Homme` = "Man",
+                      `Prefer not to answer` = 'I prefer not to answer',
+                      `Prefer to define myself:` = 'Other')) 
+data %>%
+  group_by(gender) %>% 
+  tally() %>% 
+  mutate(prop = percent(n/sum(n)))
+```
+
+```{r Age, Warning = FALSE, warning = FALSE}
+#8 people did not reveal their age
+nrow(data %>% 
+  filter(is.na(age)))
+
+# range of age
+range(data$age, na.rm = TRUE)
+
+# take a glance
+data %>% 
+  ggplot(aes(x = age)) + 
+  geom_histogram()
+
+# age group 
+data %>% 
+  dplyr::select(age) %>% 
+  drop_na() %>%
+  mutate(age_group = case_when(age < 20 ~ '< 20',
+                               age >= 20 & age < 30 ~ '20 - 30',
+                               age >= 30 & age < 40 ~ '30 - 40',
+                               age >= 40 & age < 50 ~ '40 - 50',
+                               age >= 50 ~ '> 50')) %>% 
+  group_by(age_group) %>% 
+  tally() %>% 
+  mutate(prop = percent(n/sum(n)))
+```
+
+```{r Living places}
+# excluding NA and one person live in Winsor
+raw_data %>% 
+  filter(is.na(`...60`) | `...60` == '?')
+
+data %>% 
+  filter(!is.na(live) & live != '?') %>% 
+  group_by(live) %>% 
+  tally() %>% 
+  mutate(prop = percent(n/sum(n)))
+```
+
+```{r education level}
+data %>% 
+  group_by(edu_level) %>% 
+  tally() %>% 
+  mutate(prop = percent(n/sum(n)))
+```
+```{r Place growing up}
+# fix typo in place growing up 
+data <- data %>%
+  mutate(grew_up = replace(grew_up, grew_up == 'S', 'Sherbrooke'))
+
+# check missing value 
+nrow(data %>% 
+  filter(is.na(grew_up) | grew_up == '?'))
+
+data %>% 
+  filter(!is.na(grew_up) & grew_up != '?') %>% 
+  group_by(grew_up) %>% 
+  tally() %>% 
+  mutate(prop = percent(n/sum(n)))
+```
+
+
+```{r Profiency in English}
+eng_pro_data <- data %>%
+  mutate(id = 1:nrow(data)) %>% 
+  dplyr::select(id, eng_pro) %>%
+  filter(eng_pro != "Ajoutez des précisions si nécessaire :" &
+           !is.na(eng_pro)) %>%
+  mutate(
+    dont_speak_eng = ifelse(str_detect(eng_pro, "I don't speak English"), 0, 0),
+    beginner = ifelse(str_detect(eng_pro, 'Beginner'), 1, 0),
+    intermediate = ifelse(str_detect(eng_pro, 'Intermediate'), 2, 0),
+    advanced = ifelse(str_detect(eng_pro, 'Advance'), 3, 0),
+    first_lan = ifelse(str_detect(eng_pro, "first language"), 4, 0),
+  ) %>%
+  mutate(eng_pro_encoded = pmax(dont_speak_eng, beginner, intermediate, advanced, first_lan), 
+         eng_pro_encoded = as.factor(eng_pro_encoded),
+    eng_pro_char = recode(
+      eng_pro_encoded,
+      '0' = "Don't speak English",
+      '1' = "Beginner",
+      '2' = 'Intermediate',
+      '3' = 'Advanced', 
+      '4' = 'English as First Language')) %>%
+  select(-c(dont_speak_eng, beginner, intermediate, advanced, first_lan))
+
+
+eng_pro_data %>%
+  group_by(eng_pro_char) %>% 
+  tally() %>% 
+  mutate(prop = percent(n/sum(n)))
+```
+
+
+
+
+
+
+# Analysis of Part 1 
+
+I'd like to know how the scores relate to the social factors: gender (BA), age (BC), where they grew up (BE), where they live (BH), education level (BI), proficiency in English (BP).  
+
+```{r data prep}
+# p1_data <- data %>% 
+#   select(-c(16:25)) %>% 
+#   mutate(id = 1:nrow(data)) %>%
+#   pivot_longer(cols = -c(gender,age, grew_up, live, edu_level, eng_pro, id), names_to = 'sentence', values_to = 'score') 
+
+p1_data_wide <- data %>%
+  select(-c(16:25)) %>%
+  mutate(id = 1:nrow(data), 
+         score_sum = rowSums(.[1:15]),
+         score_mean = rowMeans(.[1:15])) %>% 
+  select(-c(1:15)) 
+
+p1_data_long <- data %>%
+  select(-c(16:25)) %>%
+  mutate(id = 1:nrow(data)) %>%
+  pivot_longer(cols = -c(gender,age, grew_up, live, edu_level, eng_pro, id), names_to = 'sentence', values_to = 'score') %>% 
+  mutate(sentence = as.factor(sentence))
+
+```
+
+
+```{r score vs.gender}
+# violin plot  
+p1_data_long %>% 
+  filter(gender %in% c('Woman', 'Man')) %>% 
+  group_by(gender) %>%
+  ggplot(aes(x = gender, y = score, color = gender)) + 
+  geom_violin() + 
+  labs(x = 'Gender', y = 'Score', color = 'Gender') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15))
+
+  
+          
+woman_score <- p1_data_wide %>% filter(gender == 'Woman') %>% dplyr::select(score_mean)
+man_score <- p1_data_wide %>% filter(gender == 'Man') %>% dplyr::select(score_mean)
+
+# two-sample tests
+t.test(woman_score, man_score)
+wilcox.test(woman_score$score_mean, man_score$score_mean)
+
+# corr analysis for each sentence
+p1_data_long_gender_encoded <-  p1_data_long %>% 
+  filter(gender %in% c('Woman', 'Man')) %>% 
+  mutate(gender_encode = ifelse(gender == 'Woman', 1, 0)) 
+
+p1_data_long_gender_encoded %>% 
+  mutate(sentence = as.factor(sentence)) %>% 
+  group_by(sentence) %>% 
+  summarize(corr_coef = cor(score, gender_encode, method="kendall", use = "complete.obs"),
+            p_value = cor.test(score,gender_encode)[["p.value"]])
+
+```
+
+
+```{r score vs. age}
+# for each sentence
+p1_data_long %>% 
+  mutate(sentence = as.factor(sentence)) %>% 
+  group_by(sentence) %>% 
+  summarize(corr_coef = cor(age, score, method="kendall", use = "complete.obs"),
+            p_value = cor.test(age, score)[["p.value"]])
+# overall
+cor.test(p1_data_wide$score_mean, p1_data_wide$age)
+```
+
+```{r score vs. where they grew up}
+p1_data_long %>% 
+  filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
+  group_by(grew_up) %>%
+  ggplot(aes(x = grew_up, y = score, color = grew_up)) + 
+  geom_violin() + 
+  labs(x = 'Places Growing up', y = 'Score', color = 'Place Growing up') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15))
+
+# check ANOVA assumption
+# p1_data_wide %>% 
+#   filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
+#   group_by(grew_up) %>% 
+#   shapiro_test(score_mean)
+# 
+# fligner.test(score_mean~grew_up, data=p1_data_wide)
+
+# ANOVA   
+p1_data_wide %>% 
+  filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
+  anova_test(score_mean ~ grew_up) 
+
+# post-hoc (Tukey's method) 
+p1_data_wide %>% 
+  filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
+  tukey_hsd(score_mean ~ grew_up) 
+```
+
+
+```{r score vs. where they live}
+p1_data_long %>% 
+  filter(live %in% c('Montreal' ,'Other', 'Quebec' ,'Sherbrooke')) %>% 
+  group_by(live) %>%
+  ggplot(aes(x = live, y = score, color = live)) + 
+  geom_violin() + 
+  labs(x = 'Where they live', y = 'Score', color = 'Where they live') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15))
+
+# check assumption
+# p1_data_wide %>%
+#   filter(live %in% c('Montreal','Other','Quebec','Sherbrooke')) %>%
+#   group_by(live) %>%
+#   shapiro_test(score_mean)
+# 
+# fligner.test(score_mean~live, data=p1_data_wide)  # cannot satisfy
+
+# KW test
+p1_data_wide %>% 
+  filter(live %in% c('Montreal' ,'Other', 'Quebec' ,'Sherbrooke')) %>%  
+  kruskal_test(score_mean ~ live)
+
+# post-hoc
+p1_data_wide %>% 
+  filter(live %in% c('Montreal' ,'Other', 'Quebec' ,'Sherbrooke')) %>% 
+  dunn_test(score_mean ~ live)
+```
+
+```{r score vs. education level, fig.width=6, fig.height=2, warning = FALSE}
+p1_data_long %>% 
+  filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
+  group_by(edu_level) %>%
+  ggplot(aes(x = edu_level, y = score, color = edu_level)) + 
+  geom_violin() + 
+  labs(x = 'Education Level', y = 'Score', color = 'Education Level') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 10, angle = -10))
+
+# check ANOVA assumption
+# p1_data_wide %>%
+#   filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>%
+#   group_by(edu_level) %>%
+#   shapiro_test(score_mean)
+# 
+# fligner.test(score_mean~edu_level, data=p1_data_wide)
+
+# ANOVA 
+p1_data_wide %>% 
+  filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
+  anova_test(score_mean ~ edu_level) 
+
+# post-hoc (Tukey's method) 
+p1_data_wide %>% 
+  filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
+  tukey_hsd(score_mean ~ edu_level) 
+```
+
+```{r score vs. English Proficient}
+# violin plot
+p1_data_long %>% 
+  left_join(eng_pro_data, by = 'id') %>% 
+  group_by(eng_pro_char) %>% 
+  filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>%
+  ggplot(aes(x = eng_pro_char, y = score, color = eng_pro_char)) + 
+  geom_violin() + 
+  labs(x = 'English Profiency', y = 'Score', color = 'English Profiency') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 10, angle = -10))
+
+# corr analysis
+p1_data_wide %>% 
+  left_join(eng_pro_data, by = 'id') %>% 
+  filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>%
+  mutate(eng_pro_encoded = as.numeric(eng_pro_encoded)) %>% 
+  summarize(corr_coef = cor(score_mean, eng_pro_encoded, method="kendall", use = "complete.obs"),
+            p_value = cor.test(score_mean,eng_pro_encoded)[["p.value"]])
+```
+# Analysis of Part 2
+
+
+
+
+
+
+
