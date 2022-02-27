@@ -56,3 +56,25 @@ pre_clean <- function(df) {
 }
 
 
+choice_sorter <- function(inno_use, trad_use, col, new_col_name) {
+  sorted_ans <- col %>%
+    as.data.frame() %>%
+    mutate(sorted = case_when(
+      (str_detect(col, inno_use) &
+         !str_detect(col, trad_use)) ~ 'innovative',
+      (str_detect(col, trad_use) &
+         !str_detect(col, inno_use)) ~ 'traditional',
+      (str_detect(col, trad_use) &
+         str_detect(col, inno_use)) ~ 'both',
+      (!str_detect(col, trad_use) &
+         !str_detect(col, inno_use)) ~ 'neither'
+    ))
+  sorted_ans <- sorted_ans %>%
+    select(sorted)
+  names(sorted_ans)[names(sorted_ans) == 'sorted'] <- new_col_name
+  return(sorted_ans)
+}
+
+
+
+
