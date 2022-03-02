@@ -308,7 +308,7 @@ p1_data_wide %>%
   tukey_hsd(score_mean ~ edu_level) 
 ```
 
-```{r score vs. English Proficient}
+```{r score vs. English Proficiency}
 # violin plot
 p1_data_long %>% 
   left_join(eng_pro_data, by = 'id') %>% 
@@ -371,7 +371,7 @@ p2_data <- cbind(
 )
 
 p2_data <- p2_data %>% 
-  select(-c(1:10))
+  select(-c(1:10)) %>% 
   mutate(id = 1:nrow(data)) %>% 
   mutate_at(as.factor, .vars = vars(7:16)) %>% 
   mutate(id = 1:nrow(data)) 
@@ -379,7 +379,7 @@ p2_data <- p2_data %>%
 
 
 
-```{r How many people used each of these sentence?}
+```{r QR1: How many people used each of these sentence?}
 # Table 
 freq_mat <- matrix(NA, ncol = 9, nrow = 10)
 freq_mat[, 1] <- names(p2_data)[7:16]
@@ -437,45 +437,173 @@ p2_data %>%
         axis.text.x = element_text(size = 10, angle = -45, hjust = -0.08, vjust = 0.12))
 ```
 
+```{r data pred for rq2}
+rq2_data <- p2_data %>%
+  select(c(7:17)) %>%
+  mutate_at(as.character, .vars = vars(1:10))
+
+# turn word choice into binary indicator
+rq2_data_encoded <- inno_encoder(rq2_data)
+
+rq2_data_encoded <- rq2_data_encoded %>%
+  left_join(p2_data %>% select(-c(7:16)), by = 'id') %>%
+  mutate_at(as.numeric, .vars = vars(1:10)) %>%
+  mutate(inno_freq = rowMeans(.[1:10])) %>%
+  select(-c(1:10))
+
+```
 
 
+```{r inno freq vs. gender}
+rq2_data_encoded %>% 
+  filter(gender %in% c('Woman', 'Man')) %>% 
+  group_by(gender) %>% 
+  ggplot(aes(x=gender, y = inno_freq, color = gender)) + 
+  geom_boxplot(width=0.4) + 
+  labs(x = 'Gender', y = 'Probability of Using Innovative Forms', color = 'Gender') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15))
+
+woman_freq <- rq2_data_encoded %>% filter(gender == 'Woman') %>% dplyr::select(inno_freq)
+man_freq <- rq2_data_encoded %>% filter(gender == 'Man') %>% dplyr::select(inno_freq)
+
+# two-sample tests
+t.test(woman_freq, man_freq)
+wilcox.test(woman_freq$inno_freq, man_freq$inno_freq)
+
+# corr analysis
+rq2_data_encoded %>% 
+  filter(gender %in% c('Woman', 'Man')) %>% 
+  mutate(gender_encode = ifelse(gender == 'Woman', 1, 0)) %>%
+  summarize(corr_coef = cor(inno_freq, gender_encode, use = "complete.obs"),
+            p_value = cor.test(inno_freq,gender_encode)[["p.value"]])
+
+```
+
+```{r inno freq vs. age}
+cor.test(rq2_data_encoded$inno_freq, rq2_data_encoded$age)
+```
+
+```{r inno freq vs.where they grow up}
+# plot
+rq2_data_encoded %>% 
+  filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
+  group_by(grew_up) %>%
+  ggplot(aes(x = grew_up, y = inno_freq, color = grew_up)) + 
+  geom_violin() + 
+  labs(x = 'Places Growing up', y = 'Probability of Using Innovative Forms', color = 'Place Growing up') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15))
+
+# ANOVA assumption
+# rq2_data_encoded %>%
+#   filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>%
+#   group_by(grew_up) %>%
+#   shapiro_test(inno_freq)
+# # 
+# fligner.test(score_mean~grew_up, data=p1_data_wide)
+
+# ANOVA 
+rq2_data_encoded %>% 
+  filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
+  anova_test(inno_freq ~ grew_up)
+
+# post-hoc 
+rq2_data_encoded %>% 
+  filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
+  tukey_hsd(inno_freq ~ grew_up) 
+```
+
+```{r inno freq vs.where they grow up}
+rq2_data_encoded %>% 
+  filter(live %in% c('Montreal' ,'Other', 'Quebec' ,'Sherbrooke')) %>% 
+  group_by(live) %>%
+  ggplot(aes(x = live, y = inno_freq, color = live)) + 
+  geom_violin() + 
+  labs(x = 'Where they live', y = 'Probability of Using Innovative Forms', color = 'Where they live') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15))
+
+# check assumption
+# rq2_data_encoded %>%
+#   filter(live %in% c('Montreal','Other','Quebec','Sherbrooke')) %>%
+#   group_by(live) %>%
+#   shapiro_test(inno_freq)
+# 
+# fligner.test(inno_freq~live, data=rq2_data_encoded)  
 
 
+# ANOVA 
+rq2_data_encoded %>% 
+  filter(live %in% c('Montreal','Other','Quebec','Sherbrooke')) %>%
+  anova_test(inno_freq ~ live)
 
+# post-hoc 
+rq2_data_encoded %>% 
+  filter(live %in% c('Montreal','Other','Quebec','Sherbrooke')) %>%
+  tukey_hsd(inno_freq ~ live) 
+```
 
+```{r inno freq vs. education level,fig.width=6, fig.height=2, warning = FALSE}
+rq2_data_encoded %>% 
+  filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
+  group_by(edu_level) %>%
+  ggplot(aes(x = edu_level, y = inno_freq, color = edu_level)) + 
+  geom_violin() + 
+  labs(x = 'Education Level', y = 'Probability of Using Innovative Forms', color = 'Education Level') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 10, angle = -5, hjust = 0.2))
 
+# # check ANOVA assumption
+# rq2_data_encoded %>%
+#   filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>%
+#   group_by(edu_level) %>%
+#   shapiro_test(inno_freq)
 
+# fligner.test(inno_freq~edu_level, data=rq2_data_encoded) # severely violate 
 
+# KW Test 
+rq2_data_encoded %>% 
+  filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
+  kruskal_test(inno_freq ~ edu_level) 
 
+# post-hoc (dunn's test) 
+rq2_data_encoded %>% 
+  filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
+  dunn_test(inno_freq ~ edu_level) 
 
+```
 
+```{r inno_frq vs. eng pro}
+# violin plot
+rq2_data_encoded %>% 
+  left_join(eng_pro_data, by = 'id') %>% 
+  group_by(eng_pro_char) %>% 
+  filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>%
+  ggplot(aes(x = eng_pro_char, y = inno_freq, color = eng_pro_char)) + 
+  geom_violin() + 
+  labs(x = 'English Profiency', y = 'Probability of Using Innovative Forms', color = 'English Profiency') + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 10, angle = -5))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# corr analysis
+rq2_data_encoded %>% 
+  left_join(eng_pro_data, by = 'id') %>% 
+  filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>%
+  mutate(eng_pro_encoded = as.numeric(eng_pro_encoded)) %>% 
+  summarize(corr_coef = cor(inno_freq, eng_pro_encoded, method="kendall", use = "complete.obs"),
+            p_value = cor.test(inno_freq,eng_pro_encoded)[["p.value"]])
+```
 
 
 
