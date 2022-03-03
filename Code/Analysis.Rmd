@@ -50,7 +50,14 @@ range(data$age, na.rm = TRUE)
 # take a glance
 data %>% 
   ggplot(aes(x = age)) + 
-  geom_histogram()
+  geom_histogram() + 
+  labs(x = 'Age', y = 'Count') + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(size = 15,face = 'bold'),
+        axis.title.y = element_text(size = 15,face = 'bold'),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 10))
+
 
 # age group 
 data %>% 
