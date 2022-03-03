@@ -76,5 +76,18 @@ choice_sorter <- function(inno_use, trad_use, col, new_col_name) {
 }
 
 
+inno_encoder <- function(df) {
+  df[df == 'traditional'] = 0
+  df[df == 'neither'] = 0
+  df[df == 'both'] = 1
+  df[df == 'innovative'] = 1
+  
+  return(df)
+}
+
+
+
+
+
 
 
