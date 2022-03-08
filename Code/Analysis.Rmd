@@ -249,7 +249,7 @@ p1_data_wide %>%
 # post-hoc (Tukey's method) 
 p1_data_wide %>% 
   filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
-  tukey_hsd(score_mean ~ grew_up) 
+  tukey_hsd(score_mean ~ grew_up, detailed = TRUE) 
 ```
 
 
@@ -281,10 +281,11 @@ p1_data_wide %>%
 # post-hoc
 p1_data_wide %>% 
   filter(live %in% c('Montreal' ,'Other', 'Quebec' ,'Sherbrooke')) %>% 
-  dunn_test(score_mean ~ live)
+  dunn_test(score_mean ~ live, detailed = TRUE) %>% 
+  select(group1, group2, estimate1, estimate, p.adj, p.adj.signif)
 ```
 
-```{r score vs. education level, fig.width=6, fig.height=2, warning = FALSE}
+```{r score vs. education level, fig.width=8, fig.height=3, warning = FALSE}
 p1_data_long %>% 
   filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
   group_by(edu_level) %>%
@@ -294,7 +295,8 @@ p1_data_long %>%
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 10, angle = -10))
+        axis.text.x=element_blank())
+        # axis.text.x = element_text(size = 10, angle = -10))
 
 # check ANOVA assumption
 # p1_data_wide %>%
@@ -312,10 +314,11 @@ p1_data_wide %>%
 # post-hoc (Tukey's method) 
 p1_data_wide %>% 
   filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
-  tukey_hsd(score_mean ~ edu_level) 
+  tukey_hsd(score_mean ~ edu_level,detailed = TRUE) %>% 
+  select(group1, group2, estimate, p.adj, p.adj.signif)
 ```
 
-```{r score vs. English Proficiency}
+```{r score vs. English Proficiency, fig.width=7, fig.height=3}
 # violin plot
 p1_data_long %>% 
   left_join(eng_pro_data, by = 'id') %>% 
@@ -327,7 +330,8 @@ p1_data_long %>%
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 10, angle = -5))
+        axis.text.x = element_text(size = 10, hjust = 0.5))
+        #axis.text.x = element_text(size = 10, angle = -5))
 
 # corr analysis
 p1_data_wide %>% 
@@ -437,7 +441,7 @@ p2_data %>%
   geom_bar(stat="count", position ="fill") + 
   scale_y_continuous(labels = scales::percent) +
   scale_fill_brewer(palette = "BrBG") + 
-  labs(x = 'Innovative word/Traditional word', y = 'Percentage', fill = 'Word Choice') + 
+  labs(x = 'Innovative form/Traditional form', y = 'Percentage', fill = 'Sentence Choice') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold', vjust = - 1),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 10),
