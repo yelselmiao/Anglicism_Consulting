@@ -508,7 +508,7 @@ rq2_data_encoded %>%
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 15))
+        axis.text.x = element_text(size = 15))For
 
 # ANOVA assumption
 # rq2_data_encoded %>%
