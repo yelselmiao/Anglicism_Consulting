@@ -508,7 +508,7 @@ rq2_data_encoded %>%
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 15))For
+        axis.text.x = element_text(size = 15))
 
 # ANOVA assumption
 # rq2_data_encoded %>%
@@ -526,10 +526,11 @@ rq2_data_encoded %>%
 # post-hoc 
 rq2_data_encoded %>% 
   filter(grew_up %in% c('Montreal','Other','Quebec','Sherbrooke')) %>% 
-  tukey_hsd(inno_freq ~ grew_up) 
+  tukey_hsd(inno_freq ~ grew_up, detailed = TRUE, ordered = TRUE) #%>%
+ # select(group1, group2, estimate, p.adj, p.adj.signif)
 ```
 
-```{r inno freq vs.where they grow up}
+```{r inno freq vs.live }
 rq2_data_encoded %>% 
   filter(live %in% c('Montreal' ,'Other', 'Quebec' ,'Sherbrooke')) %>% 
   group_by(live) %>%
@@ -558,10 +559,11 @@ rq2_data_encoded %>%
 # post-hoc 
 rq2_data_encoded %>% 
   filter(live %in% c('Montreal','Other','Quebec','Sherbrooke')) %>%
-  tukey_hsd(inno_freq ~ live) 
+  tukey_hsd(inno_freq ~ live) %>% 
+  select(group1, group2, estimate, p.adj, p.adj.signif)
 ```
 
-```{r inno freq vs. education level,fig.width=6, fig.height=2, warning = FALSE}
+```{r inno freq vs. education level,fig.width=8, fig.height=3.7, warning = FALSE}
 rq2_data_encoded %>% 
   filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
   group_by(edu_level) %>%
@@ -571,7 +573,7 @@ rq2_data_encoded %>%
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 10, angle = -5, hjust = 0.2))
+        axis.text.x=element_blank())
 
 # # check ANOVA assumption
 # rq2_data_encoded %>%
@@ -589,7 +591,9 @@ rq2_data_encoded %>%
 # post-hoc (dunn's test) 
 rq2_data_encoded %>% 
   filter(!edu_level %in% c('I prefer not to answer','Primary school')) %>% 
-  dunn_test(inno_freq ~ edu_level) 
+  dunn_test(inno_freq ~ edu_level, detailed = TRUE) %>% 
+  select(group1, group2, estimate1, estimate2, p.adj, p.adj.signif)
+
 
 ```
 
@@ -605,7 +609,7 @@ rq2_data_encoded %>%
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 10, angle = -5))
+        axis.text.x = element_text(size = 10, hjust = 0.43))
 
 # corr analysis
 rq2_data_encoded %>% 
@@ -614,6 +618,13 @@ rq2_data_encoded %>%
   mutate(eng_pro_encoded = as.numeric(eng_pro_encoded)) %>% 
   summarize(corr_coef = cor(inno_freq, eng_pro_encoded, method="kendall", use = "complete.obs"),
             p_value = cor.test(inno_freq,eng_pro_encoded)[["p.value"]])
+
+
+rq2_data_encoded %>% 
+  left_join(eng_pro_data, by = 'id') %>% 
+  filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>% 
+  select(inno_freq, eng_pro_char) %>% 
+  anova_test(inno_freq ~ eng_pro_char)
 ```
 
 
