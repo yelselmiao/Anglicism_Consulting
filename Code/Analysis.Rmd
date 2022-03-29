@@ -227,7 +227,7 @@ p1_data_long %>%
   group_by(grew_up) %>%
   ggplot(aes(x = grew_up, y = score, color = grew_up)) + 
   geom_violin() + 
-  labs(x = 'Places Growing up', y = 'Score', color = 'Place Growing up') + 
+  labs(x = 'Place Growing up', y = 'Score', color = 'Place Growing up') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -259,7 +259,7 @@ p1_data_long %>%
   group_by(live) %>%
   ggplot(aes(x = live, y = score, color = live)) + 
   geom_violin() + 
-  labs(x = 'Where they live', y = 'Score', color = 'Where they live') + 
+  labs(x = 'Place Living in', y = 'Score', color = 'Place Living in') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -318,7 +318,7 @@ p1_data_wide %>%
   select(group1, group2, estimate, p.adj, p.adj.signif)
 ```
 
-```{r score vs. English Proficiency, fig.width=7, fig.height=3}
+```{r score vs. English Proficiency}
 # violin plot
 p1_data_long %>% 
   left_join(eng_pro_data, by = 'id') %>% 
@@ -326,7 +326,7 @@ p1_data_long %>%
   filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>%
   ggplot(aes(x = eng_pro_char, y = score, color = eng_pro_char)) + 
   geom_violin() + 
-  labs(x = 'English Profiency', y = 'Score', color = 'English Profiency') + 
+  labs(x = 'English Proficiency', y = 'Score', color = 'English Proficiency') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -504,7 +504,7 @@ rq2_data_encoded %>%
   group_by(grew_up) %>%
   ggplot(aes(x = grew_up, y = inno_freq, color = grew_up)) + 
   geom_violin() + 
-  labs(x = 'Places Growing up', y = 'Probability of Using Innovative Forms', color = 'Place Growing up') + 
+  labs(x = 'Place Growing up', y = 'Probability of Using Innovative Forms', color = 'Place Growing up') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -536,7 +536,7 @@ rq2_data_encoded %>%
   group_by(live) %>%
   ggplot(aes(x = live, y = inno_freq, color = live)) + 
   geom_violin() + 
-  labs(x = 'Where they live', y = 'Probability of Using Innovative Forms', color = 'Where they live') + 
+  labs(x = 'Place Living in', y = 'Probability of Using Innovative Forms', color = 'Place Living in') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -605,7 +605,7 @@ rq2_data_encoded %>%
   filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>%
   ggplot(aes(x = eng_pro_char, y = inno_freq, color = eng_pro_char)) + 
   geom_violin() + 
-  labs(x = 'English Profiency', y = 'Probability of Using Innovative Forms', color = 'English Profiency') + 
+  labs(x = 'English Proficiency', y = 'Probability of Using Innovative Forms', color = 'English Proficiency') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
