@@ -1,6 +1,6 @@
 # _STCS Consulting_ 
 
-## TOPIC: Investigation of Variation in the use of anglicisms among speakers of Quebec French
+## TOPIC: Investigation of Variation in the Use of Anglicisms among Speakers of Quebec French
 <img src="https://github.com/yelselmiao/Linguistic_Consulting/blob/master/Figures/BUVIBqkI_400x400.png" width="100" height="100" align="left">
 
 
