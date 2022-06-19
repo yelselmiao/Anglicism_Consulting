@@ -61,13 +61,13 @@ choice_sorter <- function(inno_use, trad_use, col, new_col_name) {
     as.data.frame() %>%
     mutate(sorted = case_when(
       (str_detect(col, inno_use) &
-         !str_detect(col, trad_use)) ~ 'innovative',
+         !str_detect(col, trad_use)) ~ 'Innovative',
       (str_detect(col, trad_use) &
-         !str_detect(col, inno_use)) ~ 'traditional',
+         !str_detect(col, inno_use)) ~ 'Traditional',
       (str_detect(col, trad_use) &
-         str_detect(col, inno_use)) ~ 'both',
+         str_detect(col, inno_use)) ~ 'Both',
       (!str_detect(col, trad_use) &
-         !str_detect(col, inno_use)) ~ 'neither'
+         !str_detect(col, inno_use)) ~ 'Neither'
     ))
   sorted_ans <- sorted_ans %>%
     select(sorted)
@@ -77,10 +77,10 @@ choice_sorter <- function(inno_use, trad_use, col, new_col_name) {
 
 
 inno_encoder <- function(df) {
-  df[df == 'traditional'] = 0
-  df[df == 'neither'] = 0
-  df[df == 'both'] = 1
-  df[df == 'innovative'] = 1
+  df[df == 'Traditional'] = 0
+  df[df == 'Neither'] = 0
+  df[df == 'Both'] = 1
+  df[df == 'Innovative'] = 1
   
   return(df)
 }
