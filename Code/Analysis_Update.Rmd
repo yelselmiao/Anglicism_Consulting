@@ -238,7 +238,7 @@ p1_data_long %>%
   group_by(grew_up) %>%
   ggplot(aes(x = grew_up, y = score, color = grew_up)) + 
   geom_violin() + 
-  labs(x = 'Place Growing up', y = 'Score', color = 'Place Growing up') + 
+  labs(x = 'Place Growing up', y = 'Score', color = 'Place of Residence') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -270,7 +270,7 @@ p1_data_long %>%
   group_by(live) %>%
   ggplot(aes(x = live, y = score, color = live)) + 
   geom_violin() + 
-  labs(x = 'Place Living in', y = 'Score', color = 'Place Living in') + 
+  labs(x = 'Place Living in', y = 'Score', color = 'Place of Residence') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -442,10 +442,15 @@ freq_df %>%
 
 
 # bar chart 
-p2_data %>% 
+p2_data_long <- p2_data %>% 
   select(c(7:16)) %>%
-  pivot_longer(cols = everything(), values_to = 'word_choice', names_to = 'sentence') %>% 
-  mutate(word_choice = factor(word_choice, levels = c('Neither', 'Both','Innovative' , 'Traditional')),
+  pivot_longer(cols = everything(), values_to = 'word_choice', names_to = 'sentence') 
+
+
+levels(p2_data_long$word_choice) <- c('Both', 'MUEV', 'Neither', 'MIEV')
+
+p2_data_long %>% 
+  mutate(word_choice = factor(word_choice, levels = c('Neither', 'Both','MUEV' , 'MIEV')),
          sentence = recode(sentence,
                 `p2_1` = "domp/dompé",
                 `p2_2` = "scroll/scroller",
@@ -464,7 +469,7 @@ p2_data %>%
   geom_bar(stat="count", position ="fill") + 
   scale_y_continuous(labels = scales::percent) +
   scale_fill_brewer(palette = "BrBG") + 
-  labs(x = 'Innovative form/Traditional form', y = 'Percentage', fill = 'Sentence choice') + 
+  labs(x = 'Unintegrated Form / Integrated Form', y = 'Percentage', fill = 'Sentence choice') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold', vjust = - 1),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 10),
@@ -527,7 +532,7 @@ rq2_data_encoded %>%
   group_by(grew_up) %>%
   ggplot(aes(x = grew_up, y = inno_freq, color = grew_up)) + 
   geom_violin() + 
-  labs(x = 'Place Growing up', y = 'Probability of Using Innovative Forms', color = 'Place Growing up') + 
+  labs(x = 'Place Growing up', y = 'Probability of Using Unintegrated Forms', color = 'Place Growing up') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -559,7 +564,7 @@ rq2_data_encoded %>%
   group_by(live) %>%
   ggplot(aes(x = live, y = inno_freq, color = live)) + 
   geom_violin() + 
-  labs(x = 'Place Living in', y = 'Probability of Using Innovative Forms', color = 'Place Living in') + 
+  labs(x = 'Place of Residence', y = 'Probability of Using Unintegrated Forms', color = 'Place of Residence') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -605,7 +610,7 @@ rq2_data_encoded %>%
   group_by(edu_level) %>%
   ggplot(aes(x = edu_level, y = inno_freq, color = edu_level)) + 
   geom_violin() + 
-  labs(x = 'Education Level', y = 'Probability of Using Innovative Forms', color = 'Education Level') + 
+  labs(x = 'Education Level', y = 'Probability of Using Unintegrated Forms', color = 'Education Level') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
@@ -641,7 +646,7 @@ rq2_data_encoded %>%
   filter(!is.na(eng_pro_char) & eng_pro_char != "Don't speak English") %>%
   ggplot(aes(x = eng_pro_char, y = inno_freq, color = eng_pro_char)) + 
   geom_violin() + 
-  labs(x = 'English Proficiency', y = 'Probability of Using Innovative Forms', color = 'English Proficiency') + 
+  labs(x = 'English Proficiency', y = 'Probability of Using Unintegrated Forms', color = 'English Proficiency') + 
   theme(axis.title.x = element_text(size = 15,face = 'bold'),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 15),
