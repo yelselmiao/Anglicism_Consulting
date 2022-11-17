@@ -470,11 +470,12 @@ p2_data_long %>%
   scale_y_continuous(labels = scales::percent) +
   scale_fill_brewer(palette = "BrBG") + 
   labs(x = 'Unintegrated Form / Integrated Form', y = 'Percentage', fill = 'Sentence choice') + 
-  theme(axis.title.x = element_text(size = 15,face = 'bold', vjust = - 1),
+  theme(axis.title.x = element_text(size = 15,face = 'bold', vjust = - 0.5),
         axis.title.y = element_text(size = 15,face = 'bold'),
         axis.text.y = element_text(size = 10),
         axis.text.x = element_text(size = 10, angle = -45, hjust = -0.05, vjust = 1.1))
 ```
+
 
 ```{r data pred for rq2}
 rq2_data <- p2_data %>%
